@@ -150,7 +150,7 @@ class ProgramNode extends ASTnode {
      * typeCheck
      */
     public void typeCheck() {
-        // TODO: Implement a type checking method for this node and its children.
+        myDeclList.typeCheck();
     }
 
     public void unparse(PrintWriter p, int indent) {
@@ -199,6 +199,12 @@ class DeclListNode extends ASTnode {
         } catch (NoSuchElementException ex) {
             System.err.println("unexpected NoSuchElementException in DeclListNode.print");
             System.exit(-1);
+        }
+    }
+
+    public void typeCheck(){
+        for(DeclNode decNode : myDecls){
+            decNode.typeCheck();
         }
     }
 
@@ -273,6 +279,10 @@ class FnBodyNode extends ASTnode {
         myStmtList.unparse(p, indent);
     }
 
+    public void typeCheck(Type retType){
+        myStmtList.typeCheck(retType);
+    }
+
     // 2 kids
     private DeclListNode myDeclList;
     private StmtListNode myStmtList;
@@ -297,6 +307,12 @@ class StmtListNode extends ASTnode {
         Iterator<StmtNode> it = myStmts.iterator();
         while (it.hasNext()) {
             it.next().unparse(p, indent);
+        }
+    }
+
+    public void typeCheck(Type retType){
+        for(StmtNode sNode : myStmts){
+            sNode.typeCheck(retType);
         }
     }
 
@@ -329,6 +345,10 @@ class ExpListNode extends ASTnode {
             }
         }
     }
+    //TODO: Might need this to take in List<Type>
+    public void typeCheck(){
+        //TODO
+    }
 
     // list of kids (ExpNodes)
     private List<ExpNode> myExps;
@@ -343,6 +363,9 @@ abstract class DeclNode extends ASTnode {
      * Note: a formal decl needs to return a sym
      */
     abstract public Symb nameAnalysis(SymTable symTab);
+
+    // Default typeCheck
+    public void typeCheck(){}
 }
 
 class VarDeclNode extends DeclNode {
@@ -533,6 +556,10 @@ class FnDeclNode extends DeclNode {
         p.println(") {");
         myBody.unparse(p, indent+4);
         p.println("}\n");
+    }
+
+    public void typeCheck(){
+        myBody.typeCheck(myType.type());
     }
 
     // 4 kids
@@ -765,6 +792,9 @@ class StructNode extends TypeNode {
 
 abstract class StmtNode extends ASTnode {
     abstract public void nameAnalysis(SymTable symTab);
+    //Some methods use retType some don't but just make abstract version
+    //so that there is no compiler issue and use when needed
+    abstract public void typeCheck(Type retType);
 }
 
 class AssignStmtNode extends StmtNode {
@@ -784,6 +814,10 @@ class AssignStmtNode extends StmtNode {
         addIndent(p, indent);
         myAssign.unparse(p, -1); // no parentheses
         p.println(";");
+    }
+
+    public void typeCheck(Type retType){
+        myAssign.typeCheck();
     }
 
     // 1 kid
@@ -809,6 +843,10 @@ class PreIncStmtNode extends StmtNode {
         myExp.unparse(p, 0);
     }
 
+    public void typeCheck(Type retType){
+        //TODO
+    }
+
     // 1 kid
     private ExpNode myExp;
 }
@@ -830,6 +868,10 @@ class PreDecStmtNode extends StmtNode {
         addIndent(p, indent);
         p.println("--;");
         myExp.unparse(p, 0);
+    }
+
+    public void typeCheck(Type retType){
+        //TODO:
     }
 
     // 1 kid
@@ -856,6 +898,10 @@ class ReceiveStmtNode extends StmtNode {
         p.println(";");
     }
 
+    public void typeCheck(Type retType){
+        //TODO:
+    }
+
     // 1 kid (actually can only be an IdNode or an ArrayExpNode)
     private ExpNode myExp;
 }
@@ -878,6 +924,10 @@ class PrintStmtNode extends StmtNode {
         p.print("print << ");
         myExp.unparse(p, 0);
         p.println(";");
+    }
+
+    public void typeCheck(Type retType){
+        //TODO:
     }
 
     // 1 kid
@@ -922,6 +972,10 @@ class IfStmtNode extends StmtNode {
         myStmtList.unparse(p, indent+4);
         addIndent(p, indent);
         p.println("}");
+    }
+
+    public void typeCheck(Type retType){
+        //TODO
     }
 
     // e kids
@@ -993,6 +1047,10 @@ class IfElseStmtNode extends StmtNode {
         p.println("}");
     }
 
+    public void typeCheck(Type retType){
+        //TODO
+    }
+
     // 5 kids
     private ExpNode myExp;
     private DeclListNode myThenDeclList;
@@ -1041,6 +1099,10 @@ class WhileStmtNode extends StmtNode {
         p.println("}");
     }
 
+    public void typeCheck(Type retType){
+        //TODO
+    }
+
     // 3 kids
     private ExpNode myExp;
     private DeclListNode myDeclList;
@@ -1087,6 +1149,10 @@ class RepeatStmtNode extends StmtNode {
         p.println("}");
     }
 
+    public void typeCheck(Type retType){
+        //TODO
+    }
+
     // 3 kids
     private ExpNode myExp;
     private DeclListNode myDeclList;
@@ -1111,6 +1177,10 @@ class CallStmtNode extends StmtNode {
         addIndent(p, indent);
         myCall.unparse(p, indent);
         p.println(";");
+    }
+
+    public void typeCheck(Type retType){
+        //TODO
     }
 
     // 1 kid
@@ -1143,6 +1213,10 @@ class ReturnStmtNode extends StmtNode {
         p.println(";");
     }
 
+    public void typeCheck(Type retType){
+        //TODO
+    }
+
     // 1 kid
     private ExpNode myExp; // possibly null
 }
@@ -1156,6 +1230,8 @@ abstract class ExpNode extends ASTnode {
      * Default version for nodes with no names
      */
     public void nameAnalysis(SymTable symTab) { }
+
+    abstract public Type typeCheck();
 }
 
 class IntLitNode extends ExpNode {
@@ -1167,6 +1243,10 @@ class IntLitNode extends ExpNode {
 
     public void unparse(PrintWriter p, int indent) {
         p.print(myIntVal);
+    }
+
+    public Type typeCheck(){
+        //TODO
     }
 
     private int myLineNum;
@@ -1185,6 +1265,10 @@ class StringLitNode extends ExpNode {
         p.print(myStrVal);
     }
 
+    public Type typeCheck(){
+        //TODO
+    }
+
     private int myLineNum;
     private int myCharNum;
     private String myStrVal;
@@ -1200,6 +1284,10 @@ class TrueNode extends ExpNode {
         p.print("tru");
     }
 
+    public Type typeCheck(){
+        //TODO
+    }
+
     private int myLineNum;
     private int myCharNum;
 }
@@ -1212,6 +1300,10 @@ class FalseNode extends ExpNode {
 
     public void unparse(PrintWriter p, int indent) {
         p.print("fls");
+    }
+
+    public Type typeCheck(){
+        //TODO
     }
 
     private int myLineNum;
@@ -1280,6 +1372,10 @@ class IdNode extends ExpNode {
         if (mySym != null) {
             p.print("(" + mySym + ")");
         }
+    }
+
+    public Type typeCheck(){
+        //TODO
     }
 
     private int myLineNum;
@@ -1419,6 +1515,10 @@ class DotAccessExpNode extends ExpNode {
         myId.unparse(p, 0);
     }
 
+    public Type typeCheck(){
+        //TODO
+    }
+
     // 2 kids
     private ExpNode myLoc;
     private IdNode myId;
@@ -1448,6 +1548,10 @@ class AssignNode extends ExpNode {
         p.print(" = ");
         myExp.unparse(p, 0);
         if (indent != -1)  p.print(")");
+    }
+
+    public Type typeCheck(){
+        //TODO
     }
 
     // 2 kids
@@ -1484,6 +1588,10 @@ class CallExpNode extends ExpNode {
             myExpList.unparse(p, 0);
         }
         p.print(")");
+    }
+
+    public Type typeCheck(){
+        //TODO
     }
 
     // 2 kids
@@ -1543,6 +1651,10 @@ class UnaryMinusNode extends UnaryExpNode {
         myExp.unparse(p, 0);
         p.print(")");
     }
+
+    public Type typeCheck(){
+        //TODO
+    }
 }
 
 class NotNode extends UnaryExpNode {
@@ -1554,6 +1666,10 @@ class NotNode extends UnaryExpNode {
         p.print("(!");
         myExp.unparse(p, 0);
         p.print(")");
+    }
+
+    public Type typeCheck(){
+        //TODO
     }
 }
 
@@ -1573,6 +1689,10 @@ class PlusNode extends BinaryExpNode {
         myExp2.unparse(p, 0);
         p.print(")");
     }
+
+    public Type typeCheck(){
+        //TODO
+    }
 }
 
 class MinusNode extends BinaryExpNode {
@@ -1586,6 +1706,10 @@ class MinusNode extends BinaryExpNode {
         p.print(" - ");
         myExp2.unparse(p, 0);
         p.print(")");
+    }
+
+    public Type typeCheck(){
+        //TODO
     }
 }
 
@@ -1601,6 +1725,10 @@ class TimesNode extends BinaryExpNode {
         myExp2.unparse(p, 0);
         p.print(")");
     }
+
+    public Type typeCheck(){
+        //TODO
+    }
 }
 
 class DivideNode extends BinaryExpNode {
@@ -1614,6 +1742,10 @@ class DivideNode extends BinaryExpNode {
         p.print(" / ");
         myExp2.unparse(p, 0);
         p.print(")");
+    }
+
+    public Type typeCheck(){
+        //TODO
     }
 }
 
@@ -1629,6 +1761,10 @@ class AndNode extends BinaryExpNode {
         myExp2.unparse(p, 0);
         p.print(")");
     }
+
+    public Type typeCheck(){
+        //TODO
+    }
 }
 
 class OrNode extends BinaryExpNode {
@@ -1642,6 +1778,10 @@ class OrNode extends BinaryExpNode {
         p.print(" || ");
         myExp2.unparse(p, 0);
         p.print(")");
+    }
+
+    public Type typeCheck(){
+        //TODO
     }
 }
 
@@ -1657,6 +1797,10 @@ class EqualsNode extends BinaryExpNode {
         myExp2.unparse(p, 0);
         p.print(")");
     }
+
+    public Type typeCheck(){
+        //TODO
+    }
 }
 
 class NotEqualsNode extends BinaryExpNode {
@@ -1670,6 +1814,10 @@ class NotEqualsNode extends BinaryExpNode {
         p.print(" != ");
         myExp2.unparse(p, 0);
         p.print(")");
+    }
+
+    public Type typeCheck(){
+        //TODO
     }
 }
 
@@ -1685,6 +1833,10 @@ class LessNode extends BinaryExpNode {
         myExp2.unparse(p, 0);
         p.print(")");
     }
+
+    public Type typeCheck(){
+        //TODO
+    }
 }
 
 class GreaterNode extends BinaryExpNode {
@@ -1698,6 +1850,10 @@ class GreaterNode extends BinaryExpNode {
         p.print(" > ");
         myExp2.unparse(p, 0);
         p.print(")");
+    }
+
+    public Type typeCheck(){
+        //TODO
     }
 }
 
@@ -1713,6 +1869,10 @@ class LessEqNode extends BinaryExpNode {
         myExp2.unparse(p, 0);
         p.print(")");
     }
+
+    public Type typeCheck(){
+        //TODO
+    }
 }
 
 class GreaterEqNode extends BinaryExpNode {
@@ -1726,5 +1886,9 @@ class GreaterEqNode extends BinaryExpNode {
         p.print(" >= ");
         myExp2.unparse(p, 0);
         p.print(")");
+    }
+
+    public Type typeCheck(){
+        //TODO
     }
 }
