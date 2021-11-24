@@ -279,6 +279,7 @@ class FnBodyNode extends ASTnode {
         myStmtList.unparse(p, indent);
     }
 
+    //TODO: Check if retType is proper here
     public void typeCheck(Type retType){
         myStmtList.typeCheck(retType);
     }
@@ -310,6 +311,7 @@ class StmtListNode extends ASTnode {
         }
     }
 
+    //TODO: Check that retType is right hewre
     public void typeCheck(Type retType){
         for(StmtNode sNode : myStmts){
             sNode.typeCheck(retType);
@@ -844,7 +846,12 @@ class PreIncStmtNode extends StmtNode {
     }
 
     public void typeCheck(Type retType){
-        //TODO
+        Type type = myExp.typeCheck();
+
+        //TODO: do we have to check if it is an errorType here?
+        if(/*!type.isErrorType() && */ !type.isIntType()){
+            ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Arithmetic operator applied to non-numeric operand");
+        }
     }
 
     // 1 kid
@@ -871,7 +878,13 @@ class PreDecStmtNode extends StmtNode {
     }
 
     public void typeCheck(Type retType){
-        //TODO:
+
+        Type type = myExp.typeCheck();
+
+        //TODO: Do we have to check if it is an errorType
+        if(/*!type.isErrorType() &&*/ !type.isIntType()){
+            ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Arithmetic operator applied to non-numeric operand");
+        }
     }
 
     // 1 kid
@@ -899,7 +912,24 @@ class ReceiveStmtNode extends StmtNode {
     }
 
     public void typeCheck(Type retType){
-        //TODO:
+        
+        Type type = myExp.typeCheck();
+
+        //Can't read a function
+        if(type.isFnType()){
+            ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Attempt to read function");
+        }
+
+        //Can't read a struct name
+        if(type.isStructDefType()){
+            ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Attempt to read struct name");
+        }
+
+        //Can't read a struct variable
+        if(type.isStructType()){
+            ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Attempt to read struct variable");
+        }
+        //Otherwise good to go!
     }
 
     // 1 kid (actually can only be an IdNode or an ArrayExpNode)
@@ -927,7 +957,28 @@ class PrintStmtNode extends StmtNode {
     }
 
     public void typeCheck(Type retType){
-        //TODO:
+        
+        Type type = myExp.typeCheck();
+
+        //Can't write to a funcntion
+        if(type.isFnType()){
+            ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Attempt to write function");
+        }
+
+        //Can't write to a struct name
+        if(type.isStructDefType()){
+            ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Attempt to write struct name");
+        }
+
+        //Can't write to a struct var
+        if(type.isStructType()){
+            ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Attempt to write struct variable");
+        }
+
+        //Can't write to a void type
+        if(type.isVoidType()){
+            ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Attempt to write void");
+        }
     }
 
     // 1 kid
@@ -975,7 +1026,12 @@ class IfStmtNode extends StmtNode {
     }
 
     public void typeCheck(Type retType){
-        //TODO
+        Type type = myExp.typeCheck();
+
+        //TODO: Do we have to check errorType here?
+        if(/*!type.isErrorType() && */ !type.isBoolType()){
+            ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Non-bool expression used as if condition");
+        }
     }
 
     // e kids
@@ -1048,7 +1104,16 @@ class IfElseStmtNode extends StmtNode {
     }
 
     public void typeCheck(Type retType){
-        //TODO
+        Type type = myExp.typeCheck();
+
+        //TODO: Do we need to check error type here?
+        if(/*!type.isErrorType() && */ !type.isBoolType()){
+            ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Non-bool expression used as if condition");
+        }
+
+        //TODO: Make sure this is proper
+        myThenStmtList.typeCheck(retType);
+        myElseStmtList.typeCheck(retType);
     }
 
     // 5 kids
@@ -1230,7 +1295,9 @@ abstract class ExpNode extends ASTnode {
      * Default version for nodes with no names
      */
     public void nameAnalysis(SymTable symTab) { }
-
+    
+    abstract public int lineNum();
+    abstract public int charNum();
     abstract public Type typeCheck();
 }
 
@@ -1247,6 +1314,14 @@ class IntLitNode extends ExpNode {
 
     public Type typeCheck(){
         //TODO
+    }
+
+    public int lineNum(){
+        return myLineNum;
+    }
+
+    public int charNum(){
+        return myCharNum;
     }
 
     private int myLineNum;
@@ -1269,6 +1344,14 @@ class StringLitNode extends ExpNode {
         //TODO
     }
 
+    public int lineNum(){
+        return myLineNum;
+    }
+
+    public int charNum(){
+        return myCharNum;
+    }
+
     private int myLineNum;
     private int myCharNum;
     private String myStrVal;
@@ -1288,6 +1371,14 @@ class TrueNode extends ExpNode {
         //TODO
     }
 
+    public int lineNum(){
+        return myLineNum;
+    }
+
+    public int charNum(){
+        return myCharNum;
+    }
+
     private int myLineNum;
     private int myCharNum;
 }
@@ -1304,6 +1395,14 @@ class FalseNode extends ExpNode {
 
     public Type typeCheck(){
         //TODO
+    }
+
+    public int lineNum(){
+        return myLineNum;
+    }
+
+    public int charNum(){
+        return myCharNum;
     }
 
     private int myLineNum;
@@ -1554,6 +1653,16 @@ class AssignNode extends ExpNode {
         //TODO
     }
 
+    //TODO: make sure this should actually be rhs
+    public int lineNum(){
+        return myLhs.lineNum();
+    }
+
+    //TODO: make sure this should actually be rhs
+    public int charNum(){
+        return myLhs.charNum();
+    }
+
     // 2 kids
     private ExpNode myLhs;
     private ExpNode myExp;
@@ -1594,6 +1703,15 @@ class CallExpNode extends ExpNode {
         //TODO
     }
 
+    //TODO: Make sure that myId is right here
+    public int lineNum(){
+        return myId.lineNum();
+    }
+
+    public int charNum(){
+        return myId.charNum();
+    }
+
     // 2 kids
     private IdNode myId;
     private ExpListNode myExpList;  // possibly null
@@ -1610,6 +1728,14 @@ abstract class UnaryExpNode extends ExpNode {
      */
     public void nameAnalysis(SymTable symTab) {
         myExp.nameAnalysis(symTab);
+    }
+
+    public int lineNum(){
+        return myExp.lineNum();
+    }
+
+    public int charNum(){
+        return myExp.charNum();
     }
 
     // one child
@@ -1630,6 +1756,15 @@ abstract class BinaryExpNode extends ExpNode {
     public void nameAnalysis(SymTable symTab) {
         myExp1.nameAnalysis(symTab);
         myExp2.nameAnalysis(symTab);
+    }
+
+    //TODO: Make sure that these are actually myExp1
+    public int lineNum(){
+        return myExp1.lineNum();
+    }
+
+    public int charNum(){
+        return myExp1.charNum();
     }
 
     // two kids
