@@ -347,10 +347,16 @@ class ExpListNode extends ASTnode {
             }
         }
     }
+    
+    public int size(){
+        return myExps.size();
+    }
+
     //TODO: Might need this to take in List<Type>
     public void typeCheck(){
         //TODO
     }
+
 
     // list of kids (ExpNodes)
     private List<ExpNode> myExps;
@@ -1032,6 +1038,8 @@ class IfStmtNode extends StmtNode {
         if(/*!type.isErrorType() && */ !type.isBoolType()){
             ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Non-bool expression used as if condition");
         }
+
+        myStmtList.typeCheck(retType);
     }
 
     // e kids
@@ -1165,7 +1173,16 @@ class WhileStmtNode extends StmtNode {
     }
 
     public void typeCheck(Type retType){
-        //TODO
+
+        Type type = myExp.typeCheck();
+
+        //TODO: Do I have to check the exception type here
+        if(/* type.isErrorType() && */ !type.isBoolType()){
+            ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Non-bool expression used as while condition");
+        }
+
+        //TODO: Maybe return this?
+        myStmtList.typeCheck(retType);
     }
 
     // 3 kids
@@ -1215,7 +1232,14 @@ class RepeatStmtNode extends StmtNode {
     }
 
     public void typeCheck(Type retType){
-        //TODO
+        
+        Type type = myExp.typeCheck();
+        //TODO: Exception type here?
+        if(!type.isIntType()){
+            ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Non-integer expression used as repeat clause");
+        }
+
+        myStmtList.typeCheck(retType);
     }
 
     // 3 kids
@@ -1245,7 +1269,7 @@ class CallStmtNode extends StmtNode {
     }
 
     public void typeCheck(Type retType){
-        //TODO
+        myCall.typeCheck();
     }
 
     // 1 kid
@@ -1279,7 +1303,21 @@ class ReturnStmtNode extends StmtNode {
     }
 
     public void typeCheck(Type retType){
-        //TODO
+        if(myExp != null){ //Actually have return value
+            Type type = myExp.typeCheck();
+            //Can't have void return
+            if(retType.isVoidType()){
+                ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Return with value in void function");
+            }
+            //TODO: check if either is errorType?
+            else if(!retType.equals(type)){
+                ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Bad return value");
+            }
+        }else{ //No ret value, if it's not void then missing value
+            if(!retType.isVoidType()){
+                ErrMsg.fatal(0,0, "Missing return value");
+            }
+        }
     }
 
     // 1 kid
@@ -1313,7 +1351,7 @@ class IntLitNode extends ExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        return new IntType();
     }
 
     public int lineNum(){
@@ -1341,7 +1379,7 @@ class StringLitNode extends ExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        return new StringType();
     }
 
     public int lineNum(){
@@ -1368,7 +1406,7 @@ class TrueNode extends ExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        return new BoolType();
     }
 
     public int lineNum(){
@@ -1394,7 +1432,7 @@ class FalseNode extends ExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        return new BoolType();
     }
 
     public int lineNum(){
@@ -1474,7 +1512,13 @@ class IdNode extends ExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        if(mySym != null){
+            return mySym.getType();
+        }
+        //Basically an else statment here now, Shouldn't really get here
+        System.err.println("Id will null sym field");
+        System.exit(-1);
+        return null;
     }
 
     private int myLineNum;
@@ -1615,7 +1659,8 @@ class DotAccessExpNode extends ExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        //TODO: is this right? (Maybe mySym have to deal with?)
+        return myId.typeCheck();
     }
 
     // 2 kids
@@ -1650,15 +1695,41 @@ class AssignNode extends ExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        
+        Type lhsType = myLhs.typeCheck();
+        Type expType = myExp.typeCheck();
+        Type retType = lhsType;
+        
+        //TODO: Make sure this is right i.e ErrorType stuff
+        //Possibly make these just return otherwise they will each print out an error msg
+        if(lhsType.isErrorType() || expType.isErrorType()){
+            retType = new ErrorType();
+        }
+        //Using ErrorType here to prevent cascading Errors
+        if(lhsType.isFnType() && expType.isFnType()){
+            ErrMsg.fatal(lineNum(), charNum(), "Function assignmnet");
+            retType = new ErrorType();
+        }
+        if(lhsType.isStructDefType() && expType.isStructDefType()){
+            ErrMsg.fatal(lineNum(), charNum(), "Struct name assignment");
+            retType = new ErrorType();
+        }
+        if(lhsType.isStructType() && expType.isStructType()){
+            ErrMsg.fatal(lineNum(), charNum(), "Struct variable assignment");
+            retType = new ErrorType();
+        }
+        if(!lhsType.equals(expType) && !lhsType.isErrorType() && !expType.isErrorType()){
+            ErrMsg.fatal(lineNum(), charNum(), "Type mismatch");
+            retType = new ErrorType();
+        }
+
+        return retType;
     }
 
-    //TODO: make sure this should actually be rhs
     public int lineNum(){
         return myLhs.lineNum();
     }
 
-    //TODO: make sure this should actually be rhs
     public int charNum(){
         return myLhs.charNum();
     }
@@ -1700,7 +1771,25 @@ class CallExpNode extends ExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        
+        Type type = myId.typeCheck();
+        //Check to make sure the id used is actually a function
+        if(!type.isFnType()){
+            ErrMsg.fatal(lineNum(), charNum(), "Attempt to call non-function");
+            return new ErrorType();
+        }
+
+        FnSym function = (FnSym)myId.sym();
+        //TODO: Do we need a null check here?
+
+        // Need to check for the right number of args
+        if(function.getNumParams() != myExpList.size()){
+            ErrMsg.fatal(lineNum(), charNum(), "Function call with wrong number of args");
+            return function.getReturnType();
+        }
+        //TODO: Have to make expListNode typeCheck()
+        myExpList.typeCheck();
+        return function.getReturnType();
     }
 
     //TODO: Make sure that myId is right here
@@ -1788,7 +1877,17 @@ class UnaryMinusNode extends UnaryExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        Type type = myExp.typeCheck();
+        if(type.isErrorType()){
+            return new ErrorType();
+        }
+        //If it's not an errorType or intType
+        if(!type.isErrorType() && !type.isIntType()){
+            ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Arithmetic operator applied to non-numeric operand");
+            return new ErrorType();
+        }
+        //Must be int type if reach here
+        return new IntType();
     }
 }
 
