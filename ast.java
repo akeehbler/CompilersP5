@@ -311,7 +311,7 @@ class StmtListNode extends ASTnode {
         }
     }
 
-    //TODO: Check that retType is right hewre
+    //TODO: Check that retType is right here
     public void typeCheck(Type retType){
         for(StmtNode sNode : myStmts){
             sNode.typeCheck(retType);
@@ -855,7 +855,7 @@ class PreIncStmtNode extends StmtNode {
         Type type = myExp.typeCheck();
 
         //TODO: do we have to check if it is an errorType here?
-        if(/*!type.isErrorType() && */ !type.isIntType()){
+        if(!type.isErrorType() && !type.isIntType()){
             ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Arithmetic operator applied to non-numeric operand");
         }
     }
@@ -888,7 +888,7 @@ class PreDecStmtNode extends StmtNode {
         Type type = myExp.typeCheck();
 
         //TODO: Do we have to check if it is an errorType
-        if(/*!type.isErrorType() &&*/ !type.isIntType()){
+        if(!type.isErrorType() && !type.isIntType()){
             ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Arithmetic operator applied to non-numeric operand");
         }
     }
@@ -1035,7 +1035,7 @@ class IfStmtNode extends StmtNode {
         Type type = myExp.typeCheck();
 
         //TODO: Do we have to check errorType here?
-        if(/*!type.isErrorType() && */ !type.isBoolType()){
+        if(!type.isErrorType() && !type.isBoolType()){
             ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Non-bool expression used as if condition");
         }
 
@@ -1115,7 +1115,7 @@ class IfElseStmtNode extends StmtNode {
         Type type = myExp.typeCheck();
 
         //TODO: Do we need to check error type here?
-        if(/*!type.isErrorType() && */ !type.isBoolType()){
+        if(!type.isErrorType() && !type.isBoolType()){
             ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Non-bool expression used as if condition");
         }
 
@@ -1177,7 +1177,7 @@ class WhileStmtNode extends StmtNode {
         Type type = myExp.typeCheck();
 
         //TODO: Do I have to check the exception type here
-        if(/* type.isErrorType() && */ !type.isBoolType()){
+        if(!type.isErrorType() && !type.isBoolType()){
             ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Non-bool expression used as while condition");
         }
 
@@ -1235,7 +1235,7 @@ class RepeatStmtNode extends StmtNode {
         
         Type type = myExp.typeCheck();
         //TODO: Exception type here?
-        if(!type.isIntType()){
+        if(!type.isErrorType() && !type.isIntType()){
             ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Non-integer expression used as repeat clause");
         }
 
@@ -1310,7 +1310,7 @@ class ReturnStmtNode extends StmtNode {
                 ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Return with value in void function");
             }
             //TODO: check if either is errorType?
-            else if(!retType.equals(type)){
+            else if(!retType.equals(type) && !retType.isErrorType() && !type.isErrorType()){
                 ErrMsg.fatal(myExp.lineNum(), myExp.charNum(), "Bad return value");
             }
         }else{ //No ret value, if it's not void then missing value
@@ -1903,7 +1903,17 @@ class NotNode extends UnaryExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        Type type = myExp.typeCheck();
+
+        if(!type.isErrorType() && !type.isBoolType()){
+            ErrMsg.fatal(lineNum(), charNum(), "Logical operator applied to non-bool operand");
+            return new ErrorType();
+        }
+        if(type.isErrorType()){
+            return new ErrorType();
+        }
+        //If get here must be a bool type
+        return new BoolType();
     }
 }
 
@@ -1925,7 +1935,24 @@ class PlusNode extends BinaryExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        Type type1 = myExp1.typeCheck();
+        Type type2 = myExp2.typeCheck();
+        Type retType = new IntType();
+
+        //TODO: should the if structure be like this to allow for multiple error messages?
+        if(!type1.isErrorType() && !type1.isIntType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Arithmetic operator applied to non-numeric operand");
+            retType = new ErrorType();
+        }
+        if(!type2.isErrorType() && !type2.isIntType()){
+            ErrMsg.fatal(myExp2.lineNum(), myExp2.charNum(), "Arithmetic operator applied to non-numeric operand");
+            retType = new ErrorType();
+        }
+        if(type1.isErrorType() || type2.isErrorType()){
+            return new ErrorType();
+        }
+
+        return retType;
     }
 }
 
@@ -1943,7 +1970,24 @@ class MinusNode extends BinaryExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        Type type1 = myExp1.typeCheck();
+        Type type2 = myExp2.typeCheck();
+        Type retType = new IntType();
+
+        //TODO: should the if structure be like this to allow for multiple error messages?
+        if(!type1.isErrorType() && !type1.isIntType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Arithmetic operator applied to non-numeric operand");
+            retType = new ErrorType();
+        }
+        if(!type2.isErrorType() && !type2.isIntType()){
+            ErrMsg.fatal(myExp2.lineNum(), myExp2.charNum(), "Arithmetic operator applied to non-numeric operand");
+            retType = new ErrorType();
+        }
+        if(type1.isErrorType() || type2.isErrorType()){
+            return new ErrorType();
+        }
+
+        return retType;
     }
 }
 
@@ -1961,7 +2005,24 @@ class TimesNode extends BinaryExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        Type type1 = myExp1.typeCheck();
+        Type type2 = myExp2.typeCheck();
+        Type retType = new IntType();
+
+        //TODO: should the if structure be like this to allow for multiple error messages?
+        if(!type1.isErrorType() && !type1.isIntType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Arithmetic operator applied to non-numeric operand");
+            retType = new ErrorType();
+        }
+        if(!type2.isErrorType() && !type2.isIntType()){
+            ErrMsg.fatal(myExp2.lineNum(), myExp2.charNum(), "Arithmetic operator applied to non-numeric operand");
+            retType = new ErrorType();
+        }
+        if(type1.isErrorType() || type2.isErrorType()){
+            return new ErrorType();
+        }
+
+        return retType;
     }
 }
 
@@ -1979,7 +2040,24 @@ class DivideNode extends BinaryExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        Type type1 = myExp1.typeCheck();
+        Type type2 = myExp2.typeCheck();
+        Type retType = new IntType();
+
+        //TODO: should the if structure be like this to allow for multiple error messages?
+        if(!type1.isErrorType() && !type1.isIntType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Arithmetic operator applied to non-numeric operand");
+            retType = new ErrorType();
+        }
+        if(!type2.isErrorType() && !type2.isIntType()){
+            ErrMsg.fatal(myExp2.lineNum(), myExp2.charNum(), "Arithmetic operator applied to non-numeric operand");
+            retType = new ErrorType();
+        }
+        if(type1.isErrorType() || type2.isErrorType()){
+            return new ErrorType();
+        }
+
+        return retType;
     }
 }
 
@@ -1997,7 +2075,24 @@ class AndNode extends BinaryExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        Type type1 = myExp1.typeCheck();
+        Type type2 = myExp2.typeCheck();
+        Type retType = new BoolType();
+
+        //TODO: should the if structure be like this to allow for multiple error messages?
+        if(!type1.isErrorType() && !type1.isBoolType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Logical operator applied to non-bool operand");
+            retType = new ErrorType();
+        }
+        if(!type2.isErrorType() && !type2.isBoolType()){
+            ErrMsg.fatal(myExp2.lineNum(), myExp2.charNum(), "Logical operator applied to non-bool operand");
+            retType = new ErrorType();
+        }
+        if(type1.isErrorType() || type2.isErrorType()){
+            return new ErrorType();
+        }
+
+        return retType;
     }
 }
 
@@ -2015,7 +2110,24 @@ class OrNode extends BinaryExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        Type type1 = myExp1.typeCheck();
+        Type type2 = myExp2.typeCheck();
+        Type retType = new BoolType();
+
+        //TODO: should the if structure be like this to allow for multiple error messages?
+        if(!type1.isErrorType() && !type1.isBoolType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Logical operator applied to non-bool operand");
+            retType = new ErrorType();
+        }
+        if(!type2.isErrorType() && !type2.isBoolType()){
+            ErrMsg.fatal(myExp2.lineNum(), myExp2.charNum(), "Logical operator applied to non-bool operand");
+            retType = new ErrorType();
+        }
+        if(type1.isErrorType() || type2.isErrorType()){
+            return new ErrorType();
+        }
+
+        return retType;
     }
 }
 
@@ -2033,7 +2145,47 @@ class EqualsNode extends BinaryExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        Type type1 = myExp1.typeCheck();
+        Type type2 = myExp2.typeCheck();
+        Type retType = new BoolType();
+
+        //TODO: should the if structure be like this to allow for multiple error messages?
+        //TODO: Should below if statement be || or &&? (writeup makes it seem like both need to be void)
+        if(type1.isVoidType() && type2.isVoidType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Equality operator applied to void functions");
+            retType = new ErrorType();
+        }
+        
+        if(type1.isFnType() && type2.isFnType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Equality operator applied to functions");
+            retType = new ErrorType();
+        }
+
+        if(type1.isStructType() && type2.isStructType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Equality operator applied to struct variables");
+            retType = new ErrorType();
+        }
+
+        if(type1.isStructDefType() && type2.isStructDefType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Equality operator applied to struct names");
+            retType = new ErrorType();
+        }
+
+        if(type1.isStructType() && type2.isStructType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Equality operator applied to struct variables");
+            retType = new ErrorType();
+        }
+
+        if(!type1.equals(type2) && !type1.isErrorType() && !type2.isErrorType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Type mismatch");
+            return new ErrorType();
+        }
+
+        if(type1.isErrorType() || type2.isErrorType()){
+            return new ErrorType();
+        }
+
+        return retType;
     }
 }
 
@@ -2051,7 +2203,47 @@ class NotEqualsNode extends BinaryExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        Type type1 = myExp1.typeCheck();
+        Type type2 = myExp2.typeCheck();
+        Type retType = new BoolType();
+
+        //TODO: should the if structure be like this to allow for multiple error messages?
+        //TODO: Should below if statement be || or &&? (writeup makes it seem like both need to be void)
+        if(type1.isVoidType() && type2.isVoidType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Equality operator applied to void functions");
+            retType = new ErrorType();
+        }
+        
+        if(type1.isFnType() && type2.isFnType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Equality operator applied to functions");
+            retType = new ErrorType();
+        }
+
+        if(type1.isStructType() && type2.isStructType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Equality operator applied to struct variables");
+            retType = new ErrorType();
+        }
+
+        if(type1.isStructDefType() && type2.isStructDefType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Equality operator applied to struct names");
+            retType = new ErrorType();
+        }
+
+        if(type1.isStructType() && type2.isStructType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Equality operator applied to struct variables");
+            retType = new ErrorType();
+        }
+
+        if(!type1.equals(type2) && !type1.isErrorType() && !type2.isErrorType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Type mismatch");
+            return new ErrorType();
+        }
+
+        if(type1.isErrorType() || type2.isErrorType()){
+            return new ErrorType();
+        }
+
+        return retType;
     }
 }
 
@@ -2069,7 +2261,23 @@ class LessNode extends BinaryExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        Type type1 = myExp1.typeCheck();
+        Type type2 = myExp2.typeCheck();
+        Type retType = new BoolType();
+        //TODO: should the if structure be like this or should they be returns if there's an issue 
+        if(!type1.isErrorType() && !type1.isIntType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Relational operator applied to non-numeric operand");
+            retType = new ErrorType();
+        }
+        if(!type2.isErrorType() && !type2.isIntType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Relational operator applied to non-numeric operand");
+            retType = new ErrorType();
+        }
+        if(type1.isErrorType() || type2.isErrorType()){
+            return new ErrorType();
+        }
+
+        return retType;
     }
 }
 
@@ -2087,7 +2295,23 @@ class GreaterNode extends BinaryExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        Type type1 = myExp1.typeCheck();
+        Type type2 = myExp2.typeCheck();
+        Type retType = new BoolType();
+        //TODO: should the if structure be like this or should they be returns if there's an issue 
+        if(!type1.isErrorType() && !type1.isIntType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Relational operator applied to non-numeric operand");
+            retType = new ErrorType();
+        }
+        if(!type2.isErrorType() && !type2.isIntType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Relational operator applied to non-numeric operand");
+            retType = new ErrorType();
+        }
+        if(type1.isErrorType() || type2.isErrorType()){
+            return new ErrorType();
+        }
+
+        return retType;
     }
 }
 
@@ -2105,7 +2329,23 @@ class LessEqNode extends BinaryExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        Type type1 = myExp1.typeCheck();
+        Type type2 = myExp2.typeCheck();
+        Type retType = new BoolType();
+        //TODO: should the if structure be like this or should they be returns if there's an issue 
+        if(!type1.isErrorType() && !type1.isIntType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Relational operator applied to non-numeric operand");
+            retType = new ErrorType();
+        }
+        if(!type2.isErrorType() && !type2.isIntType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Relational operator applied to non-numeric operand");
+            retType = new ErrorType();
+        }
+        if(type1.isErrorType() || type2.isErrorType()){
+            return new ErrorType();
+        }
+
+        return retType;
     }
 }
 
@@ -2123,6 +2363,22 @@ class GreaterEqNode extends BinaryExpNode {
     }
 
     public Type typeCheck(){
-        //TODO
+        Type type1 = myExp1.typeCheck();
+        Type type2 = myExp2.typeCheck();
+        Type retType = new BoolType();
+        //TODO: should the if structure be like this or should they be returns if there's an issue 
+        if(!type1.isErrorType() && !type1.isIntType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Relational operator applied to non-numeric operand");
+            retType = new ErrorType();
+        }
+        if(!type2.isErrorType() && !type2.isIntType()){
+            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Relational operator applied to non-numeric operand");
+            retType = new ErrorType();
+        }
+        if(type1.isErrorType() || type2.isErrorType()){
+            return new ErrorType();
+        }
+
+        return retType;
     }
 }
