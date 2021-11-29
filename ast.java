@@ -1799,7 +1799,7 @@ class CallExpNode extends ExpNode {
             if (!curr.isErrorType()) {
                 Type checkedType = function.getParamTypes().get(argNum);
                 if (!checkedType.equals(curr)) {
-                    ErrMsg.fatal(lineNum(), charNum(), "Type of actual does not match type of formal");
+                    ErrMsg.fatal(en.lineNum(), en.charNum(), "Type of actual does not match type of formal");
                 }
             }
             argNum++;
