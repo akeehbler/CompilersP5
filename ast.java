@@ -2270,7 +2270,7 @@ class LessNode extends BinaryExpNode {
             retType = new ErrorType();
         }
         if(!type2.isErrorType() && !type2.isIntType()){
-            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Relational operator applied to non-numeric operand");
+            ErrMsg.fatal(myExp2.lineNum(), myExp2.charNum(), "Relational operator applied to non-numeric operand");
             retType = new ErrorType();
         }
         if(type1.isErrorType() || type2.isErrorType()){
@@ -2304,7 +2304,7 @@ class GreaterNode extends BinaryExpNode {
             retType = new ErrorType();
         }
         if(!type2.isErrorType() && !type2.isIntType()){
-            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Relational operator applied to non-numeric operand");
+            ErrMsg.fatal(myExp2.lineNum(), myExp2.charNum(), "Relational operator applied to non-numeric operand");
             retType = new ErrorType();
         }
         if(type1.isErrorType() || type2.isErrorType()){
@@ -2338,7 +2338,7 @@ class LessEqNode extends BinaryExpNode {
             retType = new ErrorType();
         }
         if(!type2.isErrorType() && !type2.isIntType()){
-            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Relational operator applied to non-numeric operand");
+            ErrMsg.fatal(myExp2.lineNum(), myExp2.charNum(), "Relational operator applied to non-numeric operand");
             retType = new ErrorType();
         }
         if(type1.isErrorType() || type2.isErrorType()){
@@ -2372,7 +2372,7 @@ class GreaterEqNode extends BinaryExpNode {
             retType = new ErrorType();
         }
         if(!type2.isErrorType() && !type2.isIntType()){
-            ErrMsg.fatal(myExp1.lineNum(), myExp1.charNum(), "Relational operator applied to non-numeric operand");
+            ErrMsg.fatal(myExp2.lineNum(), myExp2.charNum(), "Relational operator applied to non-numeric operand");
             retType = new ErrorType();
         }
         if(type1.isErrorType() || type2.isErrorType()){
