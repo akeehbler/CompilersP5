@@ -357,6 +357,10 @@ class ExpListNode extends ASTnode {
         //TODO
     }
 
+    public List<ExpNode> getList() {
+        return myExps;
+    }
+
 
     // list of kids (ExpNodes)
     private List<ExpNode> myExps;
@@ -1788,7 +1792,18 @@ class CallExpNode extends ExpNode {
             return function.getReturnType();
         }
         //TODO: Have to make expListNode typeCheck()
-        myExpList.typeCheck();
+        //myExpList.typeCheck();
+        int argNum = 0;
+        for (ExpNode en : myExpList.getList()) {
+            Type curr = en.typeCheck();
+            if (!curr.isErrorType()) {
+                Type checkedType = function.getParamTypes().get(argNum);
+                if (!checkedType.equals(curr)) {
+                    ErrMsg.fatal(lineNum(), charNum(), "Type of actual does not match type of formal");
+                }
+            }
+            argNum++;
+        }
         return function.getReturnType();
     }
 
