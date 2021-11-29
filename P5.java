@@ -146,14 +146,12 @@ public class P5 {
 		
 		// only perform typeCheck if ErrMsg.err is false
 		if (ErrMsg.getErr()) {
-			// TODO is this the right error we want to return?
 			return P5.RESULT_SYNTAX_ERROR;
 		}
 
 		astRoot.typeCheck();
 
 		if (ErrMsg.getErr()) {
-			// TODO i think this is right
 			return P5.RESULT_TYPE_ERROR;
 		}
 		
