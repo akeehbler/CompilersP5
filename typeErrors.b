@@ -97,7 +97,7 @@ void f(){
     a = (tru + 3) * 4;         		/// true + 3 is an error; the * is OK
     a = tru && (fls || 3);   			/// false || 3 is an error; the && is OK
     x("a" * 4);            				/// "a" * 4 is an error; the call is OK
-    a = 1 + ptr();              	/// p() is an error; the + is OK
+    a = 1 + ptr();              	/// ptr() is an error; the + is OK
     a = (tru + 3) == 5;        		/// true + 3 is an error; the == is OK
                        						/// regardless of the type of x
     a = tru + "hello";    				/// one error for each of the non-int operands of the +
