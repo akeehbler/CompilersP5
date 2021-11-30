@@ -7,7 +7,7 @@ int f1(int a, bool b){}
 void f2(){}
 void f3(){}
 void x(int a){}
-int f4(){ret;}
+int f4(){ret;}          /// throwing missing return value 0,0
 void f5(){ret 5 + tru;}
 int f6(){ret tru;}
 bool f7(int a){}        /// fix this?
