@@ -7,10 +7,10 @@ int f1(int a, bool b){}
 void f2(){}
 void f3(){}
 void x(int a){}
-int f4(){ret;}          /// throwing missing return value 0,0
+int f4(){ret;}          
 void f5(){ret 5 + tru;}
 int f6(){ret tru;}
-bool f7(int a){}        /// fix this?
+bool f7(int a){}        
 void f(){
     struct Pointer ptr;
     struct Pointer2 ptr2;
@@ -28,14 +28,14 @@ void f(){
     a(1);    
     
     f1(5, tru, fls);    
-    f1(5, 5 || 5);      /// getting logical operator applied ot non-bool operand    
+    f1(5, 5 || 5);          
     f1(tru, tru);
 
     ++d;
     --d;
-    b = fls + fls + tru; /// arithmatic operator applied to non-numiric operand
+    b = fls + fls + tru; 
     b = tru - tru - tru;
-    b = tru / tru / tru; /// all these are cascading
+    b = tru / tru / tru; 
     b = tru * tru * tru;
     b = -(-(-(-(tru))));
 
@@ -48,11 +48,10 @@ void f(){
     a = 5 >= 5;
     a = (5 >= 5) >= 5;
 
-    a = !(5 || 5);          /// idk if we should get two here logical operator applied to non-bool operand
-    a = 5 && 5 && 5;        /// getting three for these
-    a = 5 || 5 || 5;        /// three
-    b = (f2 && ptr)||(a || d);  /// three
-     
+    a = !(5 || 5);          
+    a = 5 && 5 && 5;        
+    a = 5 || 5 || 5;        
+    b = (f2 && ptr)||(a || d);      
 
 
     if("DD"){}else{}
@@ -63,11 +62,11 @@ void f(){
 
 
 
-    if(5 || 5 || 6){}else{} /// getting three here
-    if(5 && 5 && 5){}else{} /// getting three here
+    if(5 || 5 || 6){}else{} 
+    if(5 && 5 && 5){}else{} 
     if(!!!5){}else{}        
-    while(5 || 5 || 6){}    /// three
-    while(5 && 5 && 6){}    /// three giggity giggity
+    while(5 || 5 || 6){}    
+    while(5 && 5 && 6){}    
     while(!!8){}            
     b = tru && (fls || 3); 
 
